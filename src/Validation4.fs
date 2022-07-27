@@ -2,7 +2,7 @@ namespace TriState
 
 open FsToolkit.ErrorHandling
 
-type Validation4<'a,'e> = Option<<'a,'a * 'e list>> 
+type Validation4<'a,'e> = Option<Result<'a,'a * 'e list>> 
 
 
 [<RequireQualifiedAccess>]
