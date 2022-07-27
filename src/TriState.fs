@@ -1,5 +1,7 @@
 namespace TriState
 
+open FsToolkit.ErrorHandling
+
 type Validation3<'a,'e> =  //Result<'a,'a * ('e list)>
     | Valid of 'a
     | Warning of 'a * 'e list
@@ -7,17 +9,16 @@ type Validation3<'a,'e> =  //Result<'a,'a * ('e list)>
     
 
 
+
 [<RequireQualifiedAccess>]
-module ValidationF =  
+module Validation3 =  
     let valueToString  (rawToString: 'a -> string) (defaultValue: string) (x: Validation3<'a, 'e>) : string =
         match x with
         | Valid a ->
                     printfn $"valueToString: {a} -> {rawToString a}"
                     rawToString a
         | Warning (a,_) -> rawToString a
-        | Nothing -> defaultValue 
- 
-    
+        | Nothing -> defaultValue      
     
     let map f (x: Validation3<_, _>) : Validation3<_, _> =
         match x with
@@ -100,7 +101,7 @@ module ValidationF =
             match elist with 
                 | [] -> Validation.Ok a
                 | warnings -> Validation.Error warnings
-        | Nothing -> Validation.Error [GeneralError.ValidationError "Nothing to validate"]        
+        | Nothing -> Validation.Error ["Nothing to validate"]        
         
     let mapResult f (x: Validation3<_, _>) : Validation3<_, _> =
         match x with
