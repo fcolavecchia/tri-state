@@ -8,8 +8,6 @@ type Validation3<'a,'e> =  //Result<'a,'a * ('e list)>
     | Nothing 
     
 
-
-
 [<RequireQualifiedAccess>]
 module Validation3 =  
     let valueToString  (rawToString: 'a -> string) (defaultValue: string) (x: Validation3<'a, 'e>) : string =
