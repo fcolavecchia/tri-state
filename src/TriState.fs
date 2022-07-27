@@ -46,17 +46,14 @@ module Validation3 =
             | Error eList -> Warning (rawCreate rawData, eList)
             
             
-    let createValidationFWithDefault  ( validate: 'b -> Validation<'a,'e>)
+    let createValidationFWithDefault  ( tryCreate: 'b -> Validation<'a,'e>)
             (defaultOutValue: 'a) (rawData:'b option)  : Validation3<'a,'e> =        
-        let resultData =  rawData |> Option.map validate
+        let resultData =  rawData |> Option.map tryCreate
         match resultData with
             | Some (Ok a) -> Valid a
             | Some (Error eList) -> Warning (defaultOutValue, eList)
             | None -> Nothing
-            
-            
-            
-            
+          
     
     let ofResult (x: Result<'a,'a * 'e list>) : Validation3<'a, 'e> =
         match x with
