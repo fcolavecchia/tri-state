@@ -1,9 +1,15 @@
+namespace TriState
 
+type Validation3<'a,'e> =  //Result<'a,'a * ('e list)>
+    | Valid of 'a
+    | Warning of 'a * 'e list
+    | Nothing 
+    
 
 
 [<RequireQualifiedAccess>]
 module ValidationF =  
-    let valueToString  (rawToString: 'a -> string) (defaultValue: string) (x: ValidationF<'a, 'e>) : string =
+    let valueToString  (rawToString: 'a -> string) (defaultValue: string) (x: Validation3<'a, 'e>) : string =
         match x with
         | Valid a ->
                     printfn $"valueToString: {a} -> {rawToString a}"
@@ -13,20 +19,20 @@ module ValidationF =
  
     
     
-    let map f (x: ValidationF<_, _>) : ValidationF<_, _> =
+    let map f (x: Validation3<_, _>) : Validation3<_, _> =
         match x with
         | Valid a -> Valid (f a)
         | Warning (a,eList) -> Warning (f a, eList)
         | Nothing -> Nothing 
  
-    let mapError f (x: ValidationF<_, _>) : ValidationF<_, _> = //x |> Result.mapError (List.map f)
+    let mapError f (x: Validation3<_, _>) : Validation3<_, _> = //x |> Result.mapError (List.map f)
         match x with
         | Valid a -> Valid a
         | Warning (a, eList) -> Warning (a, eList |> List.map f)
         | Nothing -> Nothing 
 
     
-    let mapErrors f (x: ValidationF<_, _>) : ValidationF<_, _> = 
+    let mapErrors f (x: Validation3<_, _>) : Validation3<_, _> = 
         match x with
         | Valid a -> Valid a
         | Warning (a, eList) -> Warning (a, f eList)
@@ -34,7 +40,7 @@ module ValidationF =
 
         
     let createValidationF  ( tryCreate: 'b -> Validation<'a,'e>)
-            (rawCreate: 'b ->'a)  (rawData:'b) : ValidationF<'a,'e> =        
+            (rawCreate: 'b ->'a)  (rawData:'b) : Validation3<'a,'e> =        
         let resultData = tryCreate rawData
         match resultData with
             | Ok a -> Valid a
@@ -42,7 +48,7 @@ module ValidationF =
             
             
     let createValidationFWithDefault  ( validate: 'b -> Validation<'a,'e>)
-            (defaultOutValue: 'a) (rawData:'b option)  : ValidationF<'a,'e> =        
+            (defaultOutValue: 'a) (rawData:'b option)  : Validation3<'a,'e> =        
         let resultData =  rawData |> Option.map validate
         match resultData with
             | Some (Ok a) -> Valid a
@@ -53,41 +59,41 @@ module ValidationF =
             
             
     
-    let ofResult (x: Result<'a,'a * 'e list>) : ValidationF<'a, 'e> =
+    let ofResult (x: Result<'a,'a * 'e list>) : Validation3<'a, 'e> =
         match x with
         | Ok a -> Valid a
         | Error (a,eList) -> Warning (a, eList)
              
     
-    let getErrors (x: ValidationF<_, _>) =
+    let getErrors (x: Validation3<_, _>) =
         match x with
         | Valid _ -> None 
         | Warning (_, eList) -> Some eList
         | Nothing -> None  
 
 
-    let getValid (x: ValidationF<_, _>) =
+    let getValid (x: Validation3<_, _>) =
         match x with
         | Valid a -> Some a 
         | Warning _ -> None
         | Nothing -> None 
 
     
-    let getInvalid (x: ValidationF<_, _>) =
+    let getInvalid (x: Validation3<_, _>) =
         match x with
         | Valid a -> None 
         | Warning (a,_) -> Some a
         | Nothing -> None  
 
         
-    let getValue  defaultValue (x: ValidationF<_, _>)  =
+    let getValue  defaultValue (x: Validation3<_, _>)  =
         match x with
         | Valid a -> a 
         | Warning (a,_) -> a
         | Nothing -> defaultValue
         
         
-    let toValidation  (x: ValidationF<_, _>)  =
+    let toValidation  (x: Validation3<_, _>)  =
         match x with
         | Valid a -> Validation.Ok a 
         | Warning (a,elist) ->
@@ -96,7 +102,7 @@ module ValidationF =
                 | warnings -> Validation.Error warnings
         | Nothing -> Validation.Error [GeneralError.ValidationError "Nothing to validate"]        
         
-    let mapResult f (x: ValidationF<_, _>) : ValidationF<_, _> =
+    let mapResult f (x: Validation3<_, _>) : Validation3<_, _> =
         match x with
         | Valid a ->
             let res = f a
