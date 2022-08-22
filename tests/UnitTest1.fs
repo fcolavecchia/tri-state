@@ -1,9 +1,8 @@
 module tests
 
-open FsToolkit.ErrorHandling
 open NUnit.Framework
 
-open TriState 
+open TriState.Validation3
 
 type MyError =
     | MyError of string
@@ -26,10 +25,10 @@ type MyInt =
     static member isValid  min  max  value =
         value > min &&  value < max
         
-    static member TryCreate min max value : Validation<MyInt,MyError> =
+    static member TryCreate min max value : Result<MyInt,MyError> =
         match value with
-        | value when (MyInt.isValid min max value) -> Validation.Ok (MyInt value) 
-        | _ -> Validation.Error [InvalidRangeError min max value ]
+        | value when (MyInt.isValid min max value) -> Result.Ok (MyInt value) 
+        | _ -> Result.Error (InvalidRangeError min max value)
         
     
 
@@ -40,7 +39,7 @@ let min =  0
 type MyValidatedInt = Validation3<MyInt,MyError>  
 
 let tryCreateMyValidatedInt min max = 
-    Validation3.createValidationF (MyInt.TryCreate min max) MyInt 
+    Validation3.create (MyInt.TryCreate min max) MyInt 
 
 [<SetUp>]
 let Setup () =
@@ -52,7 +51,7 @@ let ``Valid int`` () =
     let b = 3
     
     let actual = tryCreateMyValidatedInt min max b 
-    let expected : MyValidatedInt = Valid (MyInt b)
+    let expected : MyValidatedInt = Validation3.Valid (MyInt b)
    
     Assert.AreEqual (expected, actual)
 
@@ -62,6 +61,6 @@ let ``Invalid int`` () =
     let b = 6
     
     let actual = tryCreateMyValidatedInt min max b 
-    let expected : MyValidatedInt = Warning (MyInt b, [InvalidRangeError min max b])
+    let expected : MyValidatedInt = Validation3.Warning (MyInt b, InvalidRangeError min max b)
    
     Assert.AreEqual (expected, actual)
